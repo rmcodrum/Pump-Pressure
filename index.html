@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pump Outlet Pressure Monitor</title>
     <style>
+        /* Reset body margin and set to full viewport height */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            height: 100vh;
+            justify-content: space-evenly;
+            height: 100vh; /* Full viewport height */
             margin: 0;
             padding: 0;
+            overflow: hidden; /* Prevent scrolling */
         }
         .dashboard {
             background-color: white;
@@ -22,9 +24,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            margin-bottom: 10px;
-            width: 90vw;
-            max-width: 600px;
+            width: 90vw; /* 90% of the viewport width */
+            max-width: 600px; /* Limit maximum width */
         }
         .value {
             font-size: 48px;
@@ -34,9 +35,9 @@
             font-size: 24px;
         }
         canvas {
-            width: 90vw;
-            max-width: 1200px;
-            height: 50vh;
+            width: 90vw; /* Scale chart width with viewport */
+            max-width: 1200px; /* Limit maximum width */
+            height: 60vh; /* 60% of the viewport height */
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -60,7 +61,7 @@
     const criticalZone = { min: 45, max: 55 };
     const extremeZone = { min: 42.5, max: 57.5 };
 
-    // Predefined dummy data for initial display
+    // Initial data for the chart
     const pressureData = [50, 49, 51, 50, 48, 52, 47.5, 50, 51, 49.5, 52];
     const timestamps = ["09:00", "09:01", "09:02", "09:03", "09:04", "09:05", "09:06", "09:07", "09:08", "09:09", "09:10"];
     const maxDataPoints = 20;
