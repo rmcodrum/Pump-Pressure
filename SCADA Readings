@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pump Outlet Pressure Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 10px;
+            width: 90vw;
+            max-width: 600px;
+        }
+        .value {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        .unit {
+            font-size: 24px;
+        }
+        canvas {
+            width: 90vw;
+            max-width: 1200px;
+            height: 50vh;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Pump Outlet Pressure Monitor -->
+<div class="dashboard">
+    <h1>Pump Outlet Pressure Monitor</h1>
+    <div class="value" id="pressure-value">50</div>
+    <div class="unit">psi</div>
+</div>
+
+<!-- Canvas for the chart -->
+<canvas id="pressureChart"></canvas>
+
+<script>
+    // Threshold values
+    const nominalPressure = 50;
+    const bufferZone = { min: 47.5, max: 52.5 };
+    const criticalZone = { min: 45, max: 55 };
+    const extremeZone = { min: 42.5, max: 57.5 };
+
+    // Predefined dummy data for initial display
+    const pressureData = [50, 49, 51, 50, 48, 52, 47.5, 50, 51, 49.5, 52];
+    const timestamps = ["09:00", "09:01", "09:02", "09:03", "09:04", "09:05", "09:06", "09:07", "09:08", "09:09", "09:10"];
+    const maxDataPoints = 20;
+
+    // Function to generate random pressure within critical values
+    function generatePressureData() {
+        const deviation = (Math.random() - 0.5) * 15; // Random deviation up to ±7.5
+        return (nominalPressure + deviation).toFixed(2);
+    }
+
+    // Function to update the pressure value and the chart
+    function updatePressureValue() {
+        const pressureValueElement = document.getElementById('pressure-value');
+        const newPressure = generatePressureData();
+        pressureValueElement.textContent = newPressure;
+
+        // Add new data to the chart
+        const now = new Date().toLocaleTimeString();
+        pressureData.push(newPressure);
+        timestamps.push(now);
+
+        if (pressureData.length > maxDataPoints) {
+            pressureData.shift(); // Remove oldest data point
+            timestamps.shift();
+        }
+
+        // Update the chart with the new data
+        pressureChart.update();
+    }
+
+    // Chart.js configuration for Pump Outlet Pressure chart
+    const ctx = document.getElementById('pressureChart').getContext('2d');
+    const pressureChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [{
+                label: 'Outlet Pressure (psi)',
+                data: pressureData,
+                borderColor: 'rgba(0, 123, 255, 1)',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                borderWidth: 1,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    suggestedMin: 40, // Suggested range for better visualization
+                    suggestedMax: 60,
+                    grid: {
+                        color: function(context) {
+                            const value = context.tick.value;
+                            if (value < extremeZone.min || value > extremeZone.max) return 'rgba(255, 0, 0, 0.3)'; // Extreme zone
+                            if (value < criticalZone.min || value > criticalZone.max) return 'rgba(255, 165, 0, 0.3)'; // Critical zone
+                            if (value < bufferZone.min || value > bufferZone.max) return 'rgba(255, 255, 0, 0.3)'; // Buffer zone
+                            return 'rgba(0, 123, 255, 0.1)'; // Normal zone
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    enabled: true,
+                },
+                annotation: {
+                    annotations: [
+                        {
+                            type: 'box',
+                            yScaleID: 'y',
+                            yMin: bufferZone.min,
+                            yMax: bufferZone.max,
+                            backgroundColor: 'rgba(255, 255, 0, 0.1)',
+                            borderWidth: 0,
+                        },
+                        {
+                            type: 'box',
+                            yScaleID: 'y',
+                            yMin: criticalZone.min,
+                            yMax: criticalZone.max,
+                            backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                            borderWidth: 0,
+                        },
+                        {
+                            type: 'box',
+                            yScaleID: 'y',
+                            yMin: extremeZone.min,
+                            yMax: extremeZone.max,
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            borderWidth: 0,
+                        }
+                    ]
+                }
+            }
+        }
+    });
+
+    // Update the pressure value and the chart every 5 seconds
+    setInterval(updatePressureValue, 5000);
+</script>
+
+</body>
+</html>
